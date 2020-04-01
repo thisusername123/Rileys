@@ -96,8 +96,7 @@ def fill():
 def kill():
     for i in range(0, 8):
         fillers[i].off()
-        arduino[i].send(States.CONVEYOR_OFF)
-
+        
 
 if __name__ == "__main__":
     main()
