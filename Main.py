@@ -96,6 +96,7 @@ def fill():
 def kill():
     for i in range(0, 8):
         fillers[i].off()
+    print(arduino.get(1))
     #arduino.send(States.CONVEYOR_OFF)
 
 
