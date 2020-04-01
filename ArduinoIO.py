@@ -12,4 +12,4 @@ class ArduinoIO:
         return self.bus.read_byte(self.addr)
 
     def send(self, val):
-        self.bus.write_byte(self.addr, port)
+        self.bus.write_byte(self.addr, val)

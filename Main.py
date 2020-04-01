@@ -6,7 +6,7 @@ import time
 
 Ports = Ports.RPiPorts()
 
-#PI
+# PI
 start_btn = gpiozero.Button(Ports.START_BUTTON)
 stop_btn = gpiozero.Button(Ports.STOP_BUTTON)
 e_stop_btn = gpiozero.Button(Ports.E_STOP_BUTTON)
@@ -16,16 +16,16 @@ hard_stop2 = gpiozero.DigitalOutputDevice(Ports.HARD_STOP_SOL_2, True, False, No
 
 filler_pistons = gpiozero.DigitalOutputDevice(Ports.FILL_RAM, True, False, None)
 
-fillers = [ gpiozero.DigitalOutputDevice(Ports.FILL_SOL_1, True, False, None), \
-            gpiozero.DigitalOutputDevice(Ports.FILL_SOL_2, True, False, None), \
-            gpiozero.DigitalOutputDevice(Ports.FILL_SOL_3, True, False, None), \
-            gpiozero.DigitalOutputDevice(Ports.FILL_SOL_4, True, False, None), \
-            gpiozero.DigitalOutputDevice(Ports.FILL_SOL_5, True, False, None), \
-            gpiozero.DigitalOutputDevice(Ports.FILL_SOL_6, True, False, None), \
-            gpiozero.DigitalOutputDevice(Ports.FILL_SOL_7, True, False, None), \
-            gpiozero.DigitalOutputDevice(Ports.FILL_SOL_8, True, False, None) ]
+fillers = [gpiozero.DigitalOutputDevice(Ports.FILL_SOL_1, True, False, None), \
+           gpiozero.DigitalOutputDevice(Ports.FILL_SOL_2, True, False, None), \
+           gpiozero.DigitalOutputDevice(Ports.FILL_SOL_3, True, False, None), \
+           gpiozero.DigitalOutputDevice(Ports.FILL_SOL_4, True, False, None), \
+           gpiozero.DigitalOutputDevice(Ports.FILL_SOL_5, True, False, None), \
+           gpiozero.DigitalOutputDevice(Ports.FILL_SOL_6, True, False, None), \
+           gpiozero.DigitalOutputDevice(Ports.FILL_SOL_7, True, False, None), \
+           gpiozero.DigitalOutputDevice(Ports.FILL_SOL_8, True, False, None)]
 
-#Arduino
+# Arduino
 arduino = ArduinoIO(Ports.I2C_CHAN, Ports.ARDUINO_I2C_ADDR)
 
 beginning_banner = gpiozero.DigitalInputDevice(Ports.BEGINNING_BANNER_SENSOR)
@@ -35,9 +35,10 @@ is_filler_extended = False
 
 machine_state = States.OFF
 
-def main():
-    while True:
 
+def main():
+    global machine_state
+    while True:
         if machine_state == States.OFF:
             kill()
             filler_pistons.off()
@@ -57,7 +58,7 @@ def main():
             arduino.send(States.CONVEYOR_ON)
             if not filler_pistons.value == 1:
                 filler_pistons.on()
-                time.sleep(2) # Wait for filler to fully extend out
+                time.sleep(2)  # Wait for filler to fully extend out
             fill()
             all_fills_done = True
             for i in Ports.FILL_SENSORS:
@@ -71,48 +72,31 @@ def main():
             if not filler_pistons.value == 0:
                 filler_pistons.off()
                 time.sleep(2)
-            machine_state == States.BUFFERRING
+            machine_state = States.BUFFERRING
 
-        elif machine_state == States.BUFFERING:
+        elif machine_state == States.BUFFERRING:
             arduino.send(States.CONVEYOR_ON)
-            hard_stop2.on()
-            timer.s
-            
-        elif machine_state == States.OFF_LOADING:
-
+            hard_stop2.off()
+            time.sleep(1)
+            hard_stop1.off()
+            machine_state = States.LOADING
         else:
             print('State Undefined')
-           
-        if is_filler_extended:
-            # while sensor is false keep filling
-            fill()
 
-            all_fills_done = True
-            for i in Ports.FILL_SENSORS:
-                all_fills_done = all_fills_done and arduino.get(i)
-
-            if all_fills_done
-                ram.off()
-                is_filler_extended = False
-                hard_stop1.on()
-                hard_stop2.off()
-
-        if ir_sensor2.value == 1:
-            hard_stop2.on()
-            hard_stop2.off()
 
 def fill():
     for i in Ports.FILL_SENSORS:
         if arduino.get(i):
             fillers[i].off()
-        else
+        else:
             fillers[i].on()
+
 
 def kill():
     for i in range(0, 8):
         fillers[i].off()
-    arduino[i].send(States.CONVEYOR_OFF)
-    
+        arduino[i].send(States.CONVEYOR_OFF)
+
 
 if __name__ == "__main__":
     main()
