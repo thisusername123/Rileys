@@ -9,15 +9,15 @@ class ArduinoIO:
         self.bus = smbus2.SMBus(channel)
 
     def get(self, port):
-        try:
-            self.bus.write_byte(self.addr, port)
-            return self.bus.read_byte(self.addr)
-        except:
-            print "Error communicating with ARduino - Check power and connection."
+        #try:
+        self.bus.write_byte(self.addr, port)
+        return self.bus.read_byte(self.addr)
+        #except:
+            #print "Error communicating with Arduino - Check power and connection."
 
     def send(self, port):
-        try:
-            self.bus.write_byte(self.addr, port)
-            print("Sending Arduino: " + port)
-        except:
-            print "Error communicating with Arduino - Check power and connection."
+        #try:
+        self.bus.write_byte(self.addr, port)
+        print("Sending Arduino: " + port)
+        #except:
+        #   print "Error communicating with Arduino - Check power and connection."
