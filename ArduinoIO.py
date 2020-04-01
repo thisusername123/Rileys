@@ -12,5 +12,6 @@ class ArduinoIO:
         self.bus.write_byte(self.addr, port)
         return self.bus.read_byte(self.addr)
 
-    def send(self, val):
-        self.bus.write_byte(self.addr, val)
+    def send(self, port):
+        print(port)
+        self.bus.write_byte(self.addr, port)
