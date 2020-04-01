@@ -1,8 +1,8 @@
 import gpiozero
 import Ports
-from Fill_Sensor import FillSensor
+import States
+from ArduinoIO import ArduinoIO
 import time
-import ArduinoDI
 
 Ports = Ports.RPiPorts()
 
@@ -14,17 +14,8 @@ e_stop_btn = gpiozero.Button(Ports.E_STOP_BUTTON)
 hard_stop1 = gpiozero.DigitalOutputDevice(Ports.HARD_STOP_SOL_1, True, False, None)
 hard_stop2 = gpiozero.DigitalOutputDevice(Ports.HARD_STOP_SOL_2, True, False, None)
 
-ram = gpiozero.DigitalOutputDevice(Ports.FILL_RAM, True, False, None)
+filler_pistons = gpiozero.DigitalOutputDevice(Ports.FILL_RAM, True, False, None)
 
-#filler1 = gpiozero.DigitalOutputDevice(Ports.FILL_SOL_1, True, False, None) # port, high is true, default val
-#filler2 = gpiozero.DigitalOutputDevice(Ports.FILL_SOL_2, True, False, None)
-#filler3 = gpiozero.DigitalOutputDevice(Ports.FILL_SOL_3, True, False, None)
-#filler4 = gpiozero.DigitalOutputDevice(Ports.FILL_SOL_4, True, False, None)
-#filler5 = gpiozero.DigitalOutputDevice(Ports.FILL_SOL_5, True, False, None)
-#filler6 = gpiozero.DigitalOutputDevice(Ports.FILL_SOL_6, True, False, None)
-#filler7 = gpiozero.DigitalOutputDevice(Ports.FILL_SOL_7, True, False, None)
-#filler8 = gpiozero.DigitalOutputDevice(Ports.FILL_SOL_8, True, False, None)
-# port, high is true, default val
 fillers = [ gpiozero.DigitalOutputDevice(Ports.FILL_SOL_1, True, False, None), \
             gpiozero.DigitalOutputDevice(Ports.FILL_SOL_2, True, False, None), \
             gpiozero.DigitalOutputDevice(Ports.FILL_SOL_3, True, False, None), \
@@ -34,78 +25,85 @@ fillers = [ gpiozero.DigitalOutputDevice(Ports.FILL_SOL_1, True, False, None), \
             gpiozero.DigitalOutputDevice(Ports.FILL_SOL_7, True, False, None), \
             gpiozero.DigitalOutputDevice(Ports.FILL_SOL_8, True, False, None) ]
 
-#Arduino + Motor
-#fill_sensor1 = FillSensor(Ports.FILL_SENSOR_1) 
-#fill_sensor2 = FillSensor(Ports.FILL_SENSOR_2)
-#fill_sensor3 = FillSensor(Ports.FILL_SENSOR_3)
-#fill_sensor4 = FillSensor(Ports.FILL_SENSOR_4)
-#fill_sensor5 = FillSensor(Ports.FILL_SENSOR_5)
-#fill_sensor6 = FillSensor(Ports.FILL_SENSOR_6)
-#fill_sensor7 = FillSensor(Ports.FILL_SENSOR_7)
-#fill_sensor8 = FillSensor(Ports.FILL_SENSOR_8)
-fill_sensors = [ ArduinoDI(Ports.FILL_SENSOR_1), \
-                 ArduinoDI(Ports.FILL_SENSOR_2), \
-                 ArduinoDI(Ports.FILL_SENSOR_3), \
-                 ArduinoDI(Ports.FILL_SENSOR_4), \
-                 ArduinoDI(Ports.FILL_SENSOR_5), \
-                 ArduinoDI(Ports.FILL_SENSOR_6), \
-                 ArduinoDI(Ports.FILL_SENSOR_7), \
-                 ArduinoDI(Ports.FILL_SENSOR_8)  ]
+#Arduino
+arduino = ArduinoIO(Ports.I2C_CHAN, Ports.ARDUINO_I2C_ADDR)
 
+beginning_banner = gpiozero.DigitalInputDevice(Ports.BEGINNING_BANNER_SENSOR)
+end_banner = gpiozero.DigitalInputDevice(Ports.END_BANNER_SENSOR)
 
-mBeginningBanner = gpiozero.DigitalInputDevice(Ports.BEGINNING_BANNER_SENSOR)
-mEndBanner = gpiozero.DigitalInputDevice(Ports.END_BANNER_SENSOR)
+is_filler_extended = False
 
-output_to_arduino = gpiozero.DigitalOutputDevice(99, True, False, None)
-
-is_ram_down = None #Filler staton
+machine_state = States.OFF
 
 def main():
     while True:
-        if start_btn.is_pressed():
-            print("Started!")
 
-            # start conveyor motor
-            output_to_arduino.on()
+        if machine_state == States.OFF:
+            kill()
+            filler_pistons.off()
+            arduino.send(States.CONVEYOR_OFF)
 
-            # actuate hard stop 1
-            # hard_stop1.actuate(True)
-
-            if ir_sensor1.value == 1:
-                # stop conveyor
-                output_to_arduino.off()
-                # bring down ram
-                ram.on()
-                is_ram_down = True
-
-            time.sleep(1)
-
-            if is_ram_down:
-                # while sensor is false keep filling
-                fill()
-
-                all_fills_done = True
-
-                for i in range(0, 8):
-                    all_fills_done = all_fills_done and fill_sensors[i].get()
-
-                if all_fills_done
-                    ram.off()
-                    is_ram_down = False
-                    hard_stop1.on()
-                    hard_stop2.off()
-
-            if ir_sensor2.value == 1:
+        elif machine_state == States.LOADING:
+            arduino.send(States.CONVEYOR_ON)
+            if not end_banner:
+                hard_stop1.off()
                 hard_stop2.on()
+            elif end_banner and beginning_banner:
+                hard_stop1.on()
+                hard_stop2.on()
+                machine_state = States.FILLING
+
+        elif machine_state == States.FILLING:
+            arduino.send(States.CONVEYOR_ON)
+            if not filler_pistons.value == 1:
+                filler_pistons.on()
+                time.sleep(2) # Wait for filler to fully extend out
+            fill()
+            all_fills_done = True
+            for i in Ports.FILL_SENSORS:
+                all_fills_done = all_fills_done and arduino.get(i)
+
+            if all_fills_done:
+                machine_state = States.RETRACT_FILLER
+
+        elif machine_state == States.RETRACT_FILLER:
+            arduino.send(States.CONVEYOR_ON)
+            if not filler_pistons.value == 0:
+                filler_pistons.off()
+                time.sleep(2)
+            machine_state == States.BUFFERRING
+
+        elif machine_state == States.BUFFERING:
+            arduino.send(States.CONVEYOR_ON)
+            hard_stop2.on()
+            timer.s
+            
+        elif machine_state == States.OFF_LOADING:
+
+        else:
+            print('State Undefined')
+           
+        if is_filler_extended:
+            # while sensor is false keep filling
+            fill()
+
+            all_fills_done = True
+            for i in Ports.FILL_SENSORS:
+                all_fills_done = all_fills_done and arduino.get(i)
+
+            if all_fills_done
+                ram.off()
+                is_filler_extended = False
+                hard_stop1.on()
                 hard_stop2.off()
 
-        elif stop_btn.is_pressed() or e_stop_btn.is_pressed():
-            print('Stopped!')
-            kill()
+        if ir_sensor2.value == 1:
+            hard_stop2.on()
+            hard_stop2.off()
 
 def fill():
-    for i in range(0, 8):
-        if fill_sensors[i].get():
+    for i in Ports.FILL_SENSORS:
+        if arduino.get(i):
             fillers[i].off()
         else
             fillers[i].on()
@@ -113,6 +111,8 @@ def fill():
 def kill():
     for i in range(0, 8):
         fillers[i].off()
+    arduino[i].send(States.CONVEYOR_OFF)
+    
 
 if __name__ == "__main__":
     main()
