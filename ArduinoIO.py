@@ -13,6 +13,8 @@ class ArduinoIO:
         return self.bus.read_byte(self.addr)
 
     def send(self, port):
-        print(port) 
-        self.bus.write_byte(self.addr, port)
-        print("Successfully sent data?")
+        try:
+            self.bus.write_byte(self.addr, port)
+            print("Sending Arduino: " + port)
+        except:
+            print "Error communicating with Arduino - Check power and connection."
