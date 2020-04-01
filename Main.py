@@ -39,6 +39,11 @@ machine_state = States.OFF
 def main():
     global machine_state
     while True:
+        if start_btn.value:
+            machine_state = States.LOADING
+        elif stop_btn.value or e_stop_btn.value:
+            machine_state = States.OFF
+
         if machine_state == States.OFF:
             kill()
             filler_pistons.off()
@@ -78,7 +83,6 @@ def main():
             arduino.send(States.CONVEYOR_ON)
             hard_stop2.off()
             time.sleep(1)
-            hard_stop1.off()
             machine_state = States.LOADING
         else:
             print('State Undefined')
