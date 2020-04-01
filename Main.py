@@ -43,8 +43,6 @@ def main():
 
         if machine_state == States.OFF:
             kill()
-            #filler_pistons.off()
-            #arduino.send(States.CONVEYOR_OFF)
 
         elif machine_state == States.LOADING:
             arduino.send(States.CONVEYOR_ON)
@@ -96,7 +94,7 @@ def fill():
 def kill():
     for i in range(0, 8):
         fillers[i].off()
-    arduino.send(Ports.CONVEYOR_OFF)
+    arduino.send(Ports.CONVEYOR_ON)
 
 if __name__ == "__main__":
     main()
