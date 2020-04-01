@@ -38,10 +38,10 @@ void sendData(){
       break;
     // Start Motor (25%)
     case 254:
-      analogWrite(0, 64);
+      analogWrite(11, 64);
       break;
     // Kill Motor
     case 255:
-      analogWrite(0, 0);
+      analogWrite(11, 0);
   }
 }
