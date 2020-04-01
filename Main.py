@@ -33,7 +33,6 @@ is_filler_extended = False
 
 machine_state = States.OFF
 
-
 def main():
     global machine_state
     while True:
