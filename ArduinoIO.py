@@ -9,8 +9,11 @@ class ArduinoIO:
         self.bus = smbus2.SMBus(channel)
 
     def get(self, port):
-        self.bus.write_byte(self.addr, port)
-        return self.bus.read_byte(self.addr)
+        try:
+            self.bus.write_byte(self.addr, port)
+            return self.bus.read_byte(self.addr)
+        except:
+            print "Error communicating with ARduino - Check power and connection."
 
     def send(self, port):
         try:
