@@ -7,13 +7,14 @@ ports = Ports.RPiPorts()
 
 start_btn = gpiozero.Button(ports.START_BUTTON)
 stop_btn = gpiozero.Button(ports.STOP_BUTTON)
+e_stop_btn = gpiozero.Button(ports.E_STOP_BUTTON)
 
 hard_stop1 = gpiozero.DigitalOutputDevice(ports.HARD_STOP_SOL_1, True, False, None)
 hard_stop2 = gpiozero.DigitalOutputDevice(ports.HARD_STOP_SOL_2, True, False, None)
 
 ram = gpiozero.DigitalOutputDevice(ports.FILL_RAM, True, False, None)
 
-filler1 = gpiozero.DigitalOutputDevice(ports.FILL_SOL_1, True, False, None)
+filler1 = gpiozero.DigitalOutputDevice(ports.FILL_SOL_1, True, False, None) # port, high is true, default val
 filler2 = gpiozero.DigitalOutputDevice(ports.FILL_SOL_2, True, False, None)
 filler3 = gpiozero.DigitalOutputDevice(ports.FILL_SOL_3, True, False, None)
 filler4 = gpiozero.DigitalOutputDevice(ports.FILL_SOL_4, True, False, None)
@@ -36,7 +37,7 @@ ir_sensor2 = gpiozero.DigitalInputDevice(ports.IR_SENSOR_2)
 
 output_to_arduino = gpiozero.DigitalOutputDevice(99, True, False, None)
 
-is_ram_down = None
+is_ram_down = None #Filler staton
 # started = False
 
 while True:
@@ -50,7 +51,7 @@ while True:
         # actuate hard stop 1
         # hard_stop1.actuate(True)
 
-        if ir_sensor1.value():
+        if ir_sensor1.value == 1:
             # stop conveyor
             output_to_arduino.off()
             # bring down ram
@@ -108,10 +109,10 @@ while True:
                 hard_stop1.on()
                 hard_stop2.off()
 
-        if ir_sensor2:
+        if ir_sensor2.value == 1:
             hard_stop2.on()
             hard_stop2.off()
 
-    elif stop_btn.is_pressed() or stop_btn.is_pressed() and start_btn.is_pressed():
+    elif stop_btn.is_pressed() or e_stop_btn.is_pressed():
         print('Stopped!')
         output_to_arduino.off()

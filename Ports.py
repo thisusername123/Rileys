@@ -2,6 +2,7 @@ class RPiPorts:
     START_BUTTON = 0
     STOP_BUTTON = 0
     TEST_BUTTON = 0
+    E_STOP_BUTTON = 0
 
     HARD_STOP_SOL_1 = 0
     HARD_STOP_SOL_2 = 0
