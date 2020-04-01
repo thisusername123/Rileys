@@ -4,8 +4,6 @@ import States
 from ArduinoIO import ArduinoIO
 import time
 
-Ports = Ports.RPiPorts()
-
 # PI
 start_btn = gpiozero.Button(Ports.START_BUTTON)
 stop_btn = gpiozero.Button(Ports.STOP_BUTTON)
@@ -16,16 +14,16 @@ hard_stop2 = gpiozero.DigitalOutputDevice(Ports.HARD_STOP_SOL_2, True, False, No
 
 filler_pistons = gpiozero.DigitalOutputDevice(Ports.FILL_RAM, True, False, None)
 
-fillers = [gpiozero.DigitalOutputDevice(Ports.FILL_SOL_1, True, False, None), \
-           gpiozero.DigitalOutputDevice(Ports.FILL_SOL_2, True, False, None), \
-           gpiozero.DigitalOutputDevice(Ports.FILL_SOL_3, True, False, None), \
-           gpiozero.DigitalOutputDevice(Ports.FILL_SOL_4, True, False, None), \
-           gpiozero.DigitalOutputDevice(Ports.FILL_SOL_5, True, False, None), \
-           gpiozero.DigitalOutputDevice(Ports.FILL_SOL_6, True, False, None), \
-           gpiozero.DigitalOutputDevice(Ports.FILL_SOL_7, True, False, None), \
-           gpiozero.DigitalOutputDevice(Ports.FILL_SOL_8, True, False, None)]
+fillers = [gpiozero.DigitalOutputDevice(Ports.FILL_SOL_0, True, False, None),
+           gpiozero.DigitalOutputDevice(Ports.FILL_SOL_1, True, False, None),
+           gpiozero.DigitalOutputDevice(Ports.FILL_SOL_2, True, False, None),
+           gpiozero.DigitalOutputDevice(Ports.FILL_SOL_3, True, False, None),
+           gpiozero.DigitalOutputDevice(Ports.FILL_SOL_4, True, False, None),
+           gpiozero.DigitalOutputDevice(Ports.FILL_SOL_5, True, False, None),
+           gpiozero.DigitalOutputDevice(Ports.FILL_SOL_6, True, False, None),
+           gpiozero.DigitalOutputDevice(Ports.FILL_SOL_7, True, False, None)]
 
-# Arduino
+#Arduino
 arduino = ArduinoIO(Ports.I2C_CHAN, Ports.ARDUINO_I2C_ADDR)
 
 beginning_banner = gpiozero.DigitalInputDevice(Ports.BEGINNING_BANNER_SENSOR)
