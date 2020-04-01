@@ -45,7 +45,7 @@ def main():
             kill()
 
         elif machine_state == States.LOADING:
-            arduino.send(States.CONVEYOR_ON)
+            arduino.send(Ports.CONVEYOR_ON)
             if not end_banner:
                 hard_stop1.off()
                 hard_stop2.on()
@@ -55,7 +55,7 @@ def main():
                 machine_state = States.FILLING
 
         elif machine_state == States.FILLING:
-            arduino.send(States.CONVEYOR_ON)
+            arduino.send(Ports.CONVEYOR_ON)
             if not filler_pistons.value == 1:
                 filler_pistons.on()
                 time.sleep(2)  # Wait for filler to fully extend out
@@ -68,14 +68,14 @@ def main():
                 machine_state = States.RETRACT_FILLER
 
         elif machine_state == States.RETRACT_FILLER:
-            arduino.send(States.CONVEYOR_ON)
+            arduino.send(Ports.CONVEYOR_ON)
             if not filler_pistons.value == 0:
                 filler_pistons.off()
                 time.sleep(2)
             machine_state = States.BUFFERRING
 
         elif machine_state == States.BUFFERRING:
-            arduino.send(States.CONVEYOR_ON)
+            arduino.send(Ports.CONVEYOR_ON)
             hard_stop2.off()
             time.sleep(1)
             machine_state = States.LOADING
