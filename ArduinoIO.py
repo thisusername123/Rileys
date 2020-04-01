@@ -15,3 +15,4 @@ class ArduinoIO:
     def send(self, port):
         print(port) 
         self.bus.write_byte(self.addr, port)
+        print("Successfully sent data?")
