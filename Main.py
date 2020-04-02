@@ -37,9 +37,12 @@ def main():
     global machine_state
     while True:
         if start_btn.value:
-            machine_state = States.LOADING
-        elif stop_btn.value or e_stop_btn.value:
-            machine_state = States.OFF
+            for f in fillers:
+                f.on()
+        else:
+            for f in fillers:
+                f.off()
+        continue
 
         if machine_state == States.OFF:
             kill()
@@ -59,13 +62,18 @@ def main():
             if not filler_pistons.value == 1:
                 filler_pistons.on()
                 time.sleep(2)  # Wait for filler to fully extend out
-            fill()
-            all_fills_done = True
-            for i in Ports.FILL_SENSORS:
-                all_fills_done = all_fills_done and arduino.get(i)
+            for f in fillers:
+                f.on()
+            time.sleep(6)
+            for f in fillers:
+                f.off()
+            #fill()
+            #all_fills_done = True
+            #for i in Ports.FILL_SENSORS:
+            #    all_fills_done = all_fills_done and arduino.get(i)
 
-            if all_fills_done:
-                machine_state = States.RETRACT_FILLER
+            #if all_fills_done:
+            machine_state = States.RETRACT_FILLER
 
         elif machine_state == States.RETRACT_FILLER:
             arduino.send(Ports.CONVEYOR_ON)
