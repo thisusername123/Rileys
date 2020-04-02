@@ -2,6 +2,8 @@
 
 #define SLAVE_ADDRESS 0x04
 int number = 0;
+int motorValue = 0;
+int potPin = 2;
 
 void setup() {
   pinMode(13, OUTPUT);
@@ -19,6 +21,11 @@ void setup() {
 }
 
 void loop() {
+  int potValue = getPotValue();
+  int motorValue = map(potValue, 0, 1023, 0, 255); 
+  Serial.print("Setting motor to PWM value: ");
+  Serial.println(motorValue);
+  
   delay(20);
 }
 
@@ -37,7 +44,7 @@ void receiveData(int byteCount){
       break;
     // Start Motor (25%)
     case 254:
-      analogWrite(11, 128);
+      analogWrite(11, motorValue);
       break;
     // Kill Motor
     case 255:
@@ -66,3 +73,11 @@ void sendData(){
       digitalWrite(11, 0);
   }
 }
+
+
+//function to calculate potentiometer value
+int getPotValue()
+   {
+    int val = analogRead(potPin);
+    return val;
+   }  
